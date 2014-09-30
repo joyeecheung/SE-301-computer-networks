@@ -150,41 +150,89 @@ Applications that involves multiple end systems that exchange data with each oth
 
 [queuing demo](http://media.pearsoncmg.com/aw/aw_kurose_network_2/applets/queuing/queuing.html)
 ### Circuit Switching
-**比喻**
+* **比喻**
+	* 饭店预约
+	* 专属餐桌
+* **特点**
+	* Dedicated **end to end connection**
+	* The connection is called **circuits**
+	* *bona fide* connection: **switches** on th path maintain the connection
+	* 建立连接的过程较为复杂
+	* constant transmission rate: guaranteed
+		* packet switching: no guarantee, may have delays
+* **Use case**
+	* 传统电话网络
+* **计算**
+	* 1个Link支持N个circuit，total transmission rate为R
+		* 每个circuit的transmission rate 为R/N
 
-* 饭店预约
-* 专属餐桌
-
-**特点**
-
-* Dedicated **end to end connection**
-* The connection is called **circuits**
-* *bona fide* connection: **switches** on th path maintain the connection
-* 建立连接的过程较为复杂
-* constant transmission rate: guaranteed
-	* packet switching: no guarantee, may have delays
-
-**Use case**
-
-* 传统电话网络
-
-**计算**
-
-* 1个Link支持N个circuit，total transmission rate为R
-	* 每个circuit的transmission rate 为R/N
 ####Multiplexing in Circuit Switched Networks
-**FDM**
-
-* Frequency Division Multiplexing
-
-**TDM**
-
-* Time Division Multiplexing
+* **FDM**
+	* Frequency Division Multiplexing
+	* frequency spectrums are divided into **bands**, one for each circuit
+	* **bandwidth** in hertz/cycles per second
+* **TDM**
+	* Time Division Multiplexing
+	* Time is divided into **frames**, frames are divided into **slots**, one for each circuit
+	* Transmission rate R = number of frames per second * bits per slot
+* **Downside**
+	* other circuits are idle during **silent periods**
+	* circuit establishment is **complicated**
+	* requires **complex signaling** software to coordinate the opeartion
+* **Calculation**
+	* for TDM link
+	* circuit transmission rate R = total bit rate / number of slots
+	* time to transmit a file of L bits: L/R
 
 ####Packet Switching v.s. Circuit Switching
+* **Pros of Packet Switching**
+	* offers **better sharing** of transmission capacity
+	* simpler, more efficient, less costly
+* **Cons of Packet Switching**
+	* Not suitable for real-time services
+	* Headers increase the total amount of data to send
+	* Need to reassemble at the destiniation
+* **Why is packet switching more efficient**
+	* **Probabilities!**
+	* Essentially the same performance as circuit switching
+	* Allows more users, while in CS the number of users is more limited
+	* A burst of data may use the **full link rate**, while in CS other circuits can't help
+* **Crutial difference**
+	* PS allocate link use **on demand**
+	* CS **pre-allocate** link use **regardless of demand**
+* **Trend**
+	* Both popular, but PS are more so.
+	* Telephone networks would use PS for the expensive portion
 
 ###A Network of Networks
-
+* **access network**
+	* 不一定是电信公司，可以是普通公司或者大学、机构
+* **Basic Structure**
+	* **end systems** are connected to (pays) **access ISP**
+	* **access ISPs** are connected to (pays) **regional ISPs**
+	* **regional ISPs** are connected to (pays) **tier-1 ISPs**
+	* **tier-1 ISPs** are connected to each other **without payments**
+* **multi-home**
+	* connected to **one or more providers**
+	* 如果其中一个provider挂了，服务还能用
+* **PoP**
+	* point of presence
+	* group of routers in the **providers' network** (hence no PoP in access ISP)
+	* 每层customer租赁第三方的高速连接自己的一个路由到provider的PoP里的某个路由
+* **peer**
+	* **nearby** ISPs **at the same level** are directly connected to each other to **bypass the upstream**
+	* settlement-free(no payments)
+* **IXP**
+	* Internet Exchange Point
+	* 第三方公司，提供ISP peer的交点
+* **Content Provider Networks**
+	* e.g. Google
+	* 遍布世界的数据中心，通过私有TCP/IP网络互联
+	* 向下与lower-tier ISP进行peer，互不付费
+	* 向上与tier-1 ISP连接，付给他们钱，以连接到只能通过tier-1 ISP连接的地区
+	* 好处
+		* 降低花费
+		* 有更多的控制
 ##Performance: Delay, Loss and Throughput in Packet-Switched Networks
 ###Overview of Delay in Packet-Switched Networks
 ####Types of Delay
