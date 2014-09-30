@@ -186,6 +186,7 @@ Applications that involves multiple end systems that exchange data with each oth
 
 ####Packet Switching v.s. Circuit Switching
 * **Pros of Packet Switching**
+	* suitable for data transmission
 	* offers **better sharing** of transmission capacity
 	* simpler, more efficient, less costly
 * **Cons of Packet Switching**
@@ -233,21 +234,78 @@ Applications that involves multiple end systems that exchange data with each oth
 	* 好处
 		* 降低花费
 		* 有更多的控制
+
 ##Performance: Delay, Loss and Throughput in Packet-Switched Networks
+* Total Nodal Delay = nodal processing delay + queuing delay + tranmission delay + propagation delay
+* d<sub>nodal</sub> = d<sub>proc</sub> + d<sub>queue</sub> + d<sub>trans</sub> + d<sub>prop</sub>
+
 ###Overview of Delay in Packet-Switched Networks
+
 ####Types of Delay
-* Processing Delay
-* Queuing Delay
-* Transmission Delay
-* Propagation Delay
+* **Processing Delay**
+	* Time to examine the packet's **header**, determine the next **direction**, check **errors** ...
+	* Order of microseconds or less
+* **Queuing Delay**
+	* Time during which the packet **waits in the buffer**
+	* **varies greatly**, depending on the intensity and nature of the traffic
+	* order of microseconds ~ milliseconds
+* **Transmission Delay**
+	* If FCFS, length of the packet is L bits, transmission rate is R
+	* transmission delay is L/R
+	* The time switches need to **push the whole packet** into the link
+* **Propagation Delay**
+	* Time required to propagate a packet from on end to another in the link
+	* **propagation speed** depends on the physical medium
+		* ~ speed of light
+	* **calclations**
+		* Distance between the two ends **d**, propagation speed **s**, then propagation delay is **d/s**
+		* order of milliseconds
+
 ####Transmission Delay v.s. Propagation Delay
+* **Transmission delay**
+	* `f(packet length, transmission rate of the link)`
+* **Propagation delay**
+	* `f(distance between the two routers)`
+* **比喻**
+	* 路由器 = 收费站
+	* bit = 车
+	* packet = 车队
+	* transmission delay = 车队逐个收完费用的时间
+	* propagation delay = 车队行驶到下一个收费站用的时间
 
 ### Queuing Delay and Packet Loss
 ####Queuing Delay
+* varies from packet to packet
+* typically use statisitacl measures: mean, variance, probability
+* **Traffic intensity**
+	* Condition
+		* On average, **a** packets arrive at the queue per second
+		* **R** is the transmission rate
+		* each packet is **L** bits
+	* Traffic intensity = La/R
+		* number of bits **need to** pass through / number of bits **can** pass through
+	* **Significance**
+		* if La/R > 1
+			* needs exceed capacity, the queue will tend to grow without bound
+			* **Design your system so that the traffic intesnsity is no greater than 1**
+		* if La/R <= 1
+			* the queuing delay depends on the nature of the arriving traffic
+				* periodical arrival: the queuing delay is almost always 0
+				* burst of arrival: if N packets arrive simultaneously every NL/R seconds, nth packet has a queuing delay of (n-1)L/R seconds.
+		* if it -> 0
+			* packets arrive few and far, usually no queuing delay
+		* if it -> 1
+			* from time to time the arrival rate will exceed the transmission capacity, the queue will grow and shrink
+
 ####Packet Loss
+* occurs when a packet arrives at a **full queue**, the router will drop it
+* syndrome: transmitted by the source, but never reach the destination
+* usually the lost packet will be **retransmitted**
 
 ###End-to-End Delay
+
 ####Traceroute
+
 ####End system, Application, and other Delays
 
 ###Throughput in Computer Networks
