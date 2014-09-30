@@ -303,13 +303,34 @@ Applications that involves multiple end systems that exchange data with each oth
 * usually the lost packet will be **retransmitted**
 
 ###End-to-End Delay
+* In a network without queuing delay and has N-1 routers:
+	* d<sub>end-to-end</sub> = N(d<sub>proc</sub> + d<sub>trans</sub> +　d<sub>prop</sub>)
+	* d<sub>trans</sub> = L/R (L is packet size)
 
 ####Traceroute
+* 源发送N-1个特殊的包到目的地
+* 当第n个路由器接到第n个包，会不转发这个包，而是传回一条信息给源（第m个包（m>n）会继续转发），目的host也一样
+* 源收集这些信息来展示包的路径
+* RFC1393规定Traceroute要重复发三遍这N-1个包，记录所有实验结果
+* 由于queuing delay的差异，第n个包的延迟可能还大于第n+1个包
 
 ####End system, Application, and other Delays
+* End system wanting to transmit a packet into a **shared medium** might **purposefully** delay its transmission **as part of the protocal**
+* VoIP need to **fill a packet with encoded digitized speech** before sending it - **packetization delay**
 
 ###Throughput in Computer Networks
-
+* focusing on the outcome
+* **instantaneous throughput**
+	* the rate at which Host B is receiving the file at a instant of time
+* **average throughput**
+	* If F bits needs T seconds to be received by Host B, then the average throughput is F/T bits/sec
+* **significance**
+	* For many applications, the **delay doesn't matter**, what matters is the throughput
+* **bottleneck**
+	* R<sub>s</sub> = the rate between the server and the router
+	* R<sub>c</sub> = the rate between client and the router
+	* If no delay in the network core, throughput is **min{R<sub>s</sub>, R<sub>c</sub>}**, time to transfer a file of F bits is **F/min{R<sub>s</sub>, R<sub>c</sub>}**
+	* If the nth link has transmission rate R<sub>n</sub>, then the throughput is **min{R<sub>1</sub>, ..., R<sub>n</sub>}**
 ##Protocol Layers and Their Service Models
 ###Layered Architecture
 ####Protocol layering
