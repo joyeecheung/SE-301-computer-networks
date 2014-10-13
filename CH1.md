@@ -90,7 +90,7 @@ Applications that involves multiple end systems that exchange data with each oth
 
 ###什么是协议（Protocol）
 
-####举例：小学英语经典套话
+####举例：小学英语经典套话 (TODO)
 
 >
 
@@ -194,7 +194,7 @@ Applications that involves multiple end systems that exchange data with each oth
 	* Headers increase the total amount of data to send
 	* Need to reassemble at the destiniation
 * **Why is packet switching more efficient**
-	* **Probabilities!**
+	* **Probabilities** of idleness
 	* Essentially the same performance as circuit switching
 	* Allows more users, while in CS the number of users is more limited
 	* A burst of data may use the **full link rate**, while in CS other circuits can't help
@@ -319,7 +319,7 @@ Applications that involves multiple end systems that exchange data with each oth
 * VoIP need to **fill a packet with encoded digitized speech** before sending it - **packetization delay**
 
 ###Throughput in Computer Networks
-* focusing on the outcome
+* 以实际接收量计算
 * **instantaneous throughput**
 	* the rate at which Host B is receiving the file at a instant of time
 * **average throughput**
@@ -331,19 +331,149 @@ Applications that involves multiple end systems that exchange data with each oth
 	* R<sub>c</sub> = the rate between client and the router
 	* If no delay in the network core, throughput is **min{R<sub>s</sub>, R<sub>c</sub>}**, time to transfer a file of F bits is **F/min{R<sub>s</sub>, R<sub>c</sub>}**
 	* If the nth link has transmission rate R<sub>n</sub>, then the throughput is **min{R<sub>1</sub>, ..., R<sub>n</sub>}**
+
 ##Protocol Layers and Their Service Models
+
 ###Layered Architecture
+* **类比**
+	* TODO：图1.22
+* Each layer provides its service by
+	* performing certain **actions** within the layer
+	* using the services of the layer **directly below** it
+* **advantages**
+	* **modularity**
+	* easier to **change the implementation** of each layer
+
 ####Protocol layering
+* Network designers organize **protocols** and the network **hardware** and **software** that implement the protocols in **layers**
+* **service model**
+	* focus on the services that the layers offers to the layer above
+* **implementation**
+	* **application layer protocols**
+		* usually implemented in **software** in the **end systems**
+	* **transport layer protocols**
+		* usually implemented in **software** in the **end systems**
+	* **physical layer and data link layer**
+		* usually implemented in a **network interface card**
+		* because they are responsible for handling communication over a **specific link**
+	* **network layer protocols**
+		* usually implemented with **both hardware and software**
+	* **distribution**
+		* usually the function of protocols are **distributed** among components that make up the network
+		* there is often **a peice of** a layer n protocol in each of the network components
+* **Advantages**
+	* RFC 3439
+	* provide a **structured** way to discuss system components
+	* **modularity** -- easier to update each component
+* **Disadvantages**
+	* **Duplicate** of lower layer functionality in layers
+	* One layer might **need information only present in another layer** (but not directly below it)
+* **Protocol stack**
+	* Protocols of various layers
+	* **Internet protocol stack**
+		* physical, link, network, transport, application layers
+
 ####Application Layer
+* **What it does**
+	* runs network appplications and their application-layer protocols
+* **What it moves**
+	* **messages**
+* **Where**
+	* end systems
+* **Protocol**
+	* HTTTP
+	* SMTP
+	* FTP
+	* DNS
+
 ####Transport Layer
+* **What it does**
+	* transports application-layer messages between application endpoints
+* **What it moves**
+	* **segment**
+* **Where**
+	* end systems
+* **Protocol**
+	* TCP
+		* connection-oriented
+		* guaranteed delivery
+		* flow constrol(speed matching)
+		* congestion control(adjust transmission rate)
+	* UDP
+		* connection-less
+		* no reliability
+		* no flow control
+		* no congestion control
+* **Relationship**
+	* pass **transport-layer segment and a destination address** to the network layer
+
 ####Network Layer
+* **What it does**
+	* deliver segements passed by the transport layerin the source to the transport layer in the destination
+	* routes a datagram through a series of routers between the source and destination
+* **What it moves**
+	* **datagrams**
+* **Where**
+	* end systems, routers
+* **Protocol**
+	* IP
+		* defines the **fields** in the datagram and how the end systems and routers **act** on these fields
+	* routing protocols
+		* determine the **routes** that the datagram take
+		* within a network, the network administrator can run **any routing protocol** desired
+* **Alias**
+	* IP layer
+		* because IP is the glue that binds the Internet together
+* **Relationships**
+	* at each node, passes the datagram down to the link layer
+	* at each node, receive the datagram delivered by the link layer
+
 ####Link Layer
+* **What it does**
+	* delivers the datagram between nodes along the route
+* **What it moves**
+	* **frames**
+* **Where**
+	* end systems, routers, links
+* **Protocol**
+	* Ehternet
+	* WiFi
+	* DOCSIS (cable)
+* **Relationship**
+* **Property**
+	* Different protocols, different services
+	* Reliability depends on the protocol
+
 ####Physical Layer
+* **What it does**
+	* move **individual bits** within the frame from one node to the next
+* **What it moves**
+	* **individual bits**
+* **Where**
+	* links
+* **Protocol**
+	* depends on the link and the **actual transmission medium**
+
 ####The OSI Model
+* Open System Interconnection model
+* **only one of** many different protocol suites
+* educational purposes
+* **components**
+	* application layer, **presentation layer, session layer**, transport layer, network layer, datalink layer, physical layer
+* **presentation layer**
+	* help applications to interpret the meaning of data
+	* **data compression, data encryption, data description(format)**
+* **session layer**
+	* **delimiting and synchronization** of data exchange
+	* build a **checkpointing and recovery** scheme
+* **in practice**
+	* the presentation layer and session layer are usually built into the **application layer**
+	* up to the application developer to decide whether they will be implemented
 
 ###Encapsulation
 
 ##Networks Under Attack
+
 ###The bad guys can put malware into your host via the Internet
 ###The bad guys can attack servers and network infrastructure
 ###The bad guys can sniff packets
