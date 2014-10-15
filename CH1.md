@@ -537,15 +537,82 @@ Applications that involves multiple end systems that exchange data with each oth
 	* Internet的设计初衷就是“连接一群**互相信任的**用户的**透明**网络”
 
 ##History of Computer Networking and the Internet
-
 ###The Development of Packet Switching: 1961 - 1972
+* 1960s
+	* 电话
+		* 固定速率，circuit switching
+	* 开始考虑连接计算机
+		* 特点：bursty -- intervals of activity
+* packet switching的诞生
+	* MIT 1961,1964
+	* Rnad 1964
+	* NPL(National Physical Laboratory) 1964
+* ARPAnet
+	* 全世界第一个packet-switched计算机网络
+	* 1967
+	* 四个节点：UCLA, SRI, UCSB, University of Utah
+* NCP
+	* network-control protocol
+	* RFC 001
+	* host-to-host protocol between ARPAnet end systems
+* 第一个email程序
+	* 1972，Ray Tomlinson
 
 ###Proprietary Networks and Internetworking: 1972 - 1980
+* 背景
+	* 最初的 ARPAnet 是一个 **single, closed** 的网络
+	* 存在其他计算机网络
+* Intertetting
+	* 将现有的网络进行互联
+	* network of networks
+* 早期的TCP
+	* reliable in-sequence delivery
+	* end-system retransmission （现在仍为TCP一部分）
+	* forwarding functions（挪到了IP）
+* TCP的发展
+	* 需要unreliable, non-flow-controlled, end-to-end transport (场景e.g. packetized voice)
+	* 将IP从TCP中分离出来，并建立UDP
+	* 1970s TCP, UDP, IP成形
+* ALOHAnet 1970
+	* 第一个multiple-access protocol
+	* single broadcast communication medium
+	* 使用无线电
+* Ethernet 1976
+	* wire-based shared broadcast networks
+	* PC局域网的基础
 
 ###A Proliferation of Networks: 1980 - 1990
+* NCP -> TCP/IP
+	* 1983/01/01
+	* RFC 801
+* DNS
+	* RFC 1034
+* Minitel
+	* 法国政府免费给家庭发放终端
+	* 广泛应用
+	* 比Internet在美国普通民众的推广早10年
 
 ###The Internet Explosion: The 1990s
+* World Wide Web（The Web）
+	* Tim Berners-Lee, CERN, 1989 & 1991
+	* 基于1940s的超文本（hypertext）研究
+	* 最初的HTML, HTTP, Web server，浏览器 -- The Web的主要组成
+* GUI浏览器
+	* Mosaic -> Netscape
+	* IE，浏览器大战，微软获胜
+* killer applications
+	* E-mail
+	* The Web
+	* Instant messaging
+	* P2P
+	* 前两者来自学术界，后两者来自创业者
+* 2000-2001 互联网泡沫破裂
 
 ###The New Millenium
+* 宽带入户，视频应用
+* 公共WiFi，3G/4G蜂窝移动网络
+* 社交网络
+* 大型企业的私有网络（CPN）
+* 云
 
 ##Summary
