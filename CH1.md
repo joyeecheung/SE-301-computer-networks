@@ -321,16 +321,17 @@ Applications that involves multiple end systems that exchange data with each oth
 ###Throughput in Computer Networks
 * 以实际接收量计算
 * **instantaneous throughput**
-	* the rate at which Host B is receiving the file at a instant of time
+	* 某一瞬间B接受文件的速率（the rate at which Host B is receiving the file at a instant of time）
 * **average throughput**
-	* If F bits needs T seconds to be received by Host B, then the average throughput is F/T bits/sec
+	* B接受F-bits的文件需要T秒，average throughput = F/T bits/sec
 * **significance**
-	* For many applications, the **delay doesn't matter**, what matters is the throughput
+	* 对于大多数应用，延迟不重要，throughput更重要（看结果）
 * **bottleneck**
-	* R<sub>s</sub> = the rate between the server and the router
-	* R<sub>c</sub> = the rate between client and the router
-	* If no delay in the network core, throughput is **min{R<sub>s</sub>, R<sub>c</sub>}**, time to transfer a file of F bits is **F/min{R<sub>s</sub>, R<sub>c</sub>}**
-	* If the nth link has transmission rate R<sub>n</sub>, then the throughput is **min{R<sub>1</sub>, ..., R<sub>n</sub>}**
+	* R<sub>s</sub> = 服务器和路由器之间的速率
+	* R<sub>c</sub> = 客户端和路由器之间的速率
+	* 假设没有delay, throughput = **min{R<sub>s</sub>, R<sub>c</sub>}**, 传输F-bit的文件需要 **F/min{R<sub>s</sub>, R<sub>c</sub>}** seconds
+	* 如果第n个link的传输率是 R<sub>n</sub>, throughput = **min{R<sub>1</sub>, ..., R<sub>n</sub>}**
+	* 取决于最慢的那个link
 
 ##Protocol Layers and Their Service Models
 
@@ -350,11 +351,11 @@ Applications that involves multiple end systems that exchange data with each oth
 	* focus on the services that the layers offers to the layer above
 * **implementation**
 	* **application layer protocols**
-		* usually implemented in **software** in the **end systems**
+		* **software** in the **end systems**
 	* **transport layer protocols**
-		* usually implemented in **software** in the **end systems**
+		* **software** in the **end systems**
 	* **physical layer and data link layer**
-		* usually implemented in a **network interface card**
+		* in **network interface card**
 		* because they are responsible for handling communication over a **specific link**
 	* **network layer protocols**
 		* usually implemented with **both hardware and software**
@@ -468,22 +469,83 @@ Applications that involves multiple end systems that exchange data with each oth
 	* build a **checkpointing and recovery** scheme
 * **in practice**
 	* the presentation layer and session layer are usually built into the **application layer**
-	* up to the application developer to decide whether they will be implemented
+	* application developer decides whether they will be implemented
 
 ###Encapsulation
+* **routers and link-layer switches**
+	* both packet switches
+	* organize their networking hardware and software into layers
+	* typically implement only the **bottom layers** of the Internet protocol stack
+		* e.g. Link-layer switches -- physical & link, Internet router -- physical & link & network
+* **end system**
+	* implement all five layers
+	* most complexities of the Internet are placed at the edge of the network
+* **encapsulation**
+	* application layer -> application-layer message [M]
+	* -> transport layer -> transport-layer segment  [M][Ht]
+		* added headers: help the receiver's transport layer to pass up, error-detection...
+	* -> network layer -> network-layer-datagram  [M][Ht][Hn]
+		* added headers: system address
+	* -> link-layer -> link-layer frame  [M][Ht][Hn][Hl]
+	* **payload field** + header field = packet at each layer
+* 类比
+	* application-layer message：memo
+	* transport-layer segement：interoffice envelope
+	* network-layer datagram：postal envelope
+	* link-layer frame：package
 
 ##Networks Under Attack
+###malware
+* **malware**  恶意程序
+	* self-replicating
+	* 病毒（virus）：需要用户动作来感染设备
+	* 蠕虫（worm）：不需要用户动作就能感染设备
+* **botnet** = 肉鸡 = 被控制的设备
 
-###The bad guys can put malware into your host via the Internet
-###The bad guys can attack servers and network infrastructure
-###The bad guys can sniff packets
+###attack servers and network infrastructure
+* **DoS**
+	* denial-of-service
+	* 攻击基础设施导致其他用户无法使用服务
+	* 方法
+		* vulnerability attack：注入特殊信息，挂掉服务器程序/系统
+		* bandwidth flooding：发送大量数据包
+		* connection flooding：建立大量half-open/fully-open的TCP连接
+* **DDos**
+	* distributed Dos
+	* 原因：
+		* 用数据攻击要达到传输率R（很大）才能见效
+		* 路由器可以自动检测并屏蔽异常源
+	* 方法
+		* 控制一堆设备来分布式攻击，比如肉鸡
+
+###sniff packets 抓包
+* packet sniffer
+	* passive receiver that records of every packet that flies by
+	* don't inject packets into the channel -- difficult to detect
+	* 原因：packet的接受不设限制
+* 应对
+	* 加密
+
 ###The bad guys can masquerade as someone you trust
+* 方法
+	* transmit a hand-cragted packet into the Internet
+	* receiver use the false packet to perform commands
+	* **IP Spoofing**: inject packets into the Internet with a **false source address**
+* 应对
+	* end-point authentication
+* 原因
+	* Internet的设计初衷就是“连接一群**互相信任的**用户的**透明**网络”
 
 ##History of Computer Networking and the Internet
+
 ###The Development of Packet Switching: 1961 - 1972
+
 ###Proprietary Networks and Internetworking: 1972 - 1980
+
 ###A Proliferation of Networks: 1980 - 1990
+
 ###The Internet Explosion: The 1990s
+
 ###The New Millenium
 
 ##Summary
