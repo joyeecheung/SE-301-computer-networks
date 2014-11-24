@@ -495,9 +495,50 @@
 
 ### Overview of How DNS Works
 
+* Why not use a centralized DNS server
+	* Single point of failure
+	* Traffic volumne
+	* Distant centralized data base (clients too far away)
+	* Maintenance (update for all servers in the Internet?!)
+
 #### Distributed, Hierarchical Database
 
+* 没有 DNS 拥有互联网内所有 host 的 IP mapping -- **distributed**
+* Class of DNS server
+	* **root DNS server**
+		* 负责提供 TLD DNS server 的地址（hostname最后一部分）
+		* e.g. return the IP of **TLD DNS** server for `com`
+		* 13 个 root server -- 这里说的每个 root server 其实是一个 replicated server 的**集合**
+	* **Top-level domain DNS server** (TLD)
+		* 负责为一个 TLD 提供下属 authoritative server 的地址
+		* 除了 `com`, `edu` 等还包括国家 TLD 如 `uk`, `cn`
+		* e.g. return the IP of **authoritative DNS** server for `amazon.com`
+	* authoritative DNS server
+		* e.g. return the IP for the **actual application server** of `www.amazon.com`
+		* 通常一个网站一个，可以自己维护，也可以使用付费服务
+	* local DNS server
+		* 也叫 **default name server**
+		* 通常由ISP维护，离 client 近
+		* 充当 proxy 为 client 转发 DNS query
+* How it works (4 query for each request)
+	1. **client** sends query to **local DNS server**
+	2. local DNS server sends query to **root server**, receives a list of IPs of TLD servers
+	3. local DNS server sends query to TLD server, receives the IP of authoritative server
+	4. local DNS server sends the query to the authoritative server, get the IP of the host
+	5. local DNS server sends the IP back to the client
+* 其他
+	* TLD server 不一定知道 authoritative server 的地址，中间还隔着其他 DNS server，需要再去问他们才能得到 authoritative server 的地址
+	* Recursive + iterative
+		* 主流使用
+		* client 到 local DNS server 为recursive，其他 iterative
+		![](CH2/recursive-iterative.png)
+	* Recursive
+		![](CH2/recursive.png)
+
 #### DNS Caching
+
+* DNS server 保留 hostname -> IP 映射的缓存，这样有缓存时不需要继续递归
+* 主要出现在 local DNS server
 
 ### DNS Records and Messages
 
