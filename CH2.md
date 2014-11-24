@@ -542,12 +542,97 @@
 
 ### DNS Records and Messages
 
+* The distributed database store Resource records (**RR**)
+* Each DNS reply contains one or more RRs
+* RFC 1034, 1035
+* RR 的格式
+	* `Name, Value, Type, TTL`
+	* `TTL` = time to live, used for caching
+	* Meaning of `Name` and `Value` depend on `Type`
+* 种类(ignore TTL)
+	* `Type=A`
+    	* `Name`: hostname
+    	* `Value`: IP for the hostname
+    	* standard hostname-to-IP mapping
+    	* e.g. `(relay.a.b.com, 145.37.93.126, A)`
+    	* exists in authoritative DNS servers and local DNS server caches
+	* `Type=NS`
+    	* `Name`: a domain e.g. `foo.com`
+    	* `Value`: **hostname** of the **authoritative server** of the domain
+    	* hostname-to-hostname
+    	* e.g. `(foo.com, dns.foo.com, NS)`
+        * exists in the TLD DNS server
+        * along with a Type A record for the authoritative DNS server
+        	* e.g. `(dns.foo.com, 128.119.40.111, A)`
+	* `Type=CNAME`
+    	* `Name`: an alias hostname
+    	* `Value`: canonical hostname
+    	* hostname-to-hostname
+    	* e.g. `(b.com, relay.a.b.com, CNAME)`
+	* `Type=MX`
+    	* `Name`: an alias hostname for a **mail server**
+    	* `Value`: canonical hostname
+    	* hostname-to-hostname
+    	* e.g. `(b.com, mail.a.b.com, MX)`
+
 #### DNS Messages
+
+![](CH2/dns-messages.png)
+
+* header
+	* 12 bytes
+	* identifier
+		* 16-bit
+		* copied from query to reply for matching
+	* flag
+		* 1-bit query(0)/reply(1)
+		* 1-bit authoritative or not in reply
+		* 1-bit recursion desire in query
+		* 1-bit recursion available in reply
+    * number-of
+    	* number of data in each folloing section
+* question section
+	* info about query
+	* name field of queried name
+	* type filed of the query type (A, NS, CNAME, MX)
+* answer section
+	* contains RRs
+	* can hava multiple RRs
+* authority section
+	* RRs for other authoritative servers
+* additional section
+	* helpful records
+	* e.g. Type A record (hostname2-IP) for a MX record (hostname1-hostname2)
+* `nslookup` can send DNS message directly to DNS servers
 
 #### Inserting Records into the DNS Database
 
+* rigistrar
+	* 通常是收费的公司
+	* 验证要注册的 domain name 是否尚未被人注册
+	* 为指定的 domain name 将 RR 插入 DNS 数据库
+* how to register
+	* 提供要注册的 domain name 和自己的 primary/secondary authoritative DNS server 的 IP 给 registrar
+	* registrar 保证两个 authoritative DNS server 的 Type NS 和 Type A record 进入 TLD server
+	* 自己还要确保自己的 authoritative DNS server 拥有自己的 application server 的 Type MX/CNAME 和 Type A record
+* how it's done
+	* 过去为静态添加（e.g. 管理员手工添加）
+	* 现在 DNS protocol 加入了 `UPDATE` -- 使用 DNS message 来更新数据库
+
 ### DNS Vuneralbilities
 
+* 针对 DNS server 的DDos bandwidth-flooding attack
+	* 2002.10.21 发生了针对 root server 的攻击，大量发送 ping ICMP，但是被屏蔽了（root server 不能 ping）
+	* 大部分 local DNS server 都有 root DNS server 的缓存，所以无法直接对 root server 使用 DNS 进行攻击（直接被缓存挡回去）
+	* local DNS server 不一定有 TLD server 的缓存，所以可以对 TLD 使用 DNS query 进行攻击，但如果自动添加了新缓存，攻击效果就又降低了
+* 中间人（man-in-the-middle）攻击
+	* 攻击者截取 DNS query，返回伪造的 reply
+* DNS poisoning
+	* 发送伪造的 reply 给 DNS server，让 DNS server 保存伪造的 reply 在缓存里，误导其他人的 query
+* 利用 DNS server 间接攻击其他机器
+	* 伪造 DNS query，将攻击目标的 IP 填入 source
+	* DNS server 会将 reply 返回给 source IP 对应的机器，也就是攻击目标
+	* 可以通过一些手段让 reply 远远多过 query （amplification），这样不需要花费多少自己的资源就能达到攻击目的
 
 ## Peer-to-Peer Applications
 
