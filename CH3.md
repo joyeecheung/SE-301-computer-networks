@@ -206,17 +206,196 @@
 
 #### Over a perfectly reliable channel: rdt 1.0
 
+* ideal model
+* the underlying channel is reliable
+
+![](CH3/rdt1.png)
+
 #### With bit erros: rdt 2.0
+
+* Still in order and no loss, but now we have **bit errors**
+* **rdt 2.0: ARQ**
+	* What is it
+        * Automatic Repeat reQuest protocol
+        * **positive acknowledgments**: OK （买家确认收货）
+        * **negative acknowledgments**: please repeat that （买家联系卖家再发货）
+    * Additional requirements
+        * Error detection
+            * Use something like checsum, put them into the packet header
+            * 买家开箱发现货有问题，直接丢掉
+        * Receiver feedback
+            * **ACK and NAK** （确认收货，或者反馈货有问题）
+            * assume each is 1-bit long
+        * Retransmission
+            * Sender can retransmit a packet
+    * stop-and-wait
+        * When the sender is waiting for ACK/NAK, it **cannot get** any more data from the upper layer, so it **cannot send** any more data either.
+        * Wait until the ACK/NAK returns
+        * 买家确认收货之前，卖家不会再发其他单
+	![](CH3/rdt20.png)
+* **rtd 2.1: Sequence number**
+    * flaw
+        * what if ACK/NAK is corrupted?
+    * Solution
+        1. Send **some signal** back to the sender -- can be corruped too
+        2. **More checksum:** not only detect, but can **recover** from error
+        3. **Resend**: duplicate packets
+            * receiver can't know it is a duplicate or a new packet
+	* What we do
+		* **Retransmission** with sequence number（快递单号）
+		* Use the number to determine whether it is a retransmission
+		* For **stop-and-wait**
+			* the sequence number is in {0, 1}
+			* Sender knows the ACK/NAK correspond to the last packet sent
+    ![](CH3/rdt21sender.png)
+    ![](CH3/rdt21receiver.png)
+
+* **rdt: 2.2: Duplicate ACK**
+    * If the data received is corrupted, **don't send NAK**, send a ACK for the last ACKed packet （买家重新确认了一次上回的收获）
+    * Sender will know it is corrupted when it receives a duplicate ACK
+    ![](CH3/rdt22sender.png)
+    ![](CH3/rdt22receiver.png)
 
 #### Lossy channel + bit errors: rdt 3.0
 
+* Question
+	* How to detect **packet loss**
+	* what to do when packet loss occurs
+* Timer
+	* Wait long enough until the sender is sure the packet is lost
+	* 买家等 15 天，还不确认收货，卖家就要重新发货
+	* Now stop-and-wait won't wait forever
+	* How long?
+		* At least longer than RTT + packet process time （亲，快递不是瞬移）
+		* Choose a time for **likely but not guaranteed** packet loss （15天还没确认收货，快递一定有问题，我不要被差评）
+		* Retransmit if the ACK hasn't arrived in this time
+			* Note: retransmit even if it is not lost, just delayed too long（为了不被差评我容易吗？）
+			* Sequence number can handle duplicate packets（还是同一个单号）
+    * Sender can
+    	* Start the timer each time a packet is sent
+    	* Respond to a timer interrupt
+    	* Stop the timer
+* Note
+	* Still one packet at a time
+	* **Alternating-bit protocol**: sequence number alternates between 0 and 1
+
+![](CH3/rdt30sender.png)
+
 ### Pipelined Reliable Data Transfer Protocols
+
+* Utilization
+	* d<sub>trans</sub> = L / R (L is file size, R is link transmission rate)
+	* U<sub>sender</sub> = d<sub>trans</sub> / (RTT +  d<sub>trans</sub>)
+	* Usually, RTT >> d<sub>trans</sub>, so the sender waste most of the time on waiting the RTT
+* pipelining
+	* Send multiple packets out without waiting for ACK of the previous one
+	* 亲，我可以给你一下发很多单~
+	* **Range of sequence number** needs to be increased
+	* Sender and receiver needs to **buffer** packets
+		* Sender need to buffer packets sent but not ACKed
+	* range of sequence number and buffer **depend on the error recovery approach**
+		* Go-Back-N
+		* Selective Repeat
+
+![](CH3/stop-and-wait.png)
+![](CH3/pipeline.png)
 
 ### Go-Back-N(GBN)
 
+* At most N unacknowledged packets can be in the buffer
+* 卖家只保留 N 个没有确认收获的单，多了就不再发，等确认
+* How it works
+	* `base`: seq of oldest unacknowledged packet
+	* `nextseqnum`: seq of next packet to send
+	* Four intervals
+		![](CH3/gbn-window.png)
+* Sequence number
+	* **N: window size** (range of seq for transmitted but not ACKed packets)
+		* ACK for `base` can slide the window forward
+		* GBN -> **sliding-window protocol**
+    * Total range for sequence number is [0, 2<sup>k</sup> - 1]
+    	* k is the number of bits for the seq field in the header
+    	* TCP has 32-bit, but the seq counts bytes, not packets
+* Events
+	* Invocation from above （有卖家下单）
+		* Check if the window is full （看看手上有几个单还没确认）
+			* If not, create a packet and send it （少于N个，发货）
+			* If full, return the data back（还有N个没确认，小店暂时无法提供服务~）
+				* In practice, buffer it （请您稍等，收到了下一个确认我就给您发）
+	* Receipt of an ACK
+		* Cumulative acknowledgment
+		* ACK of n indicates packets **up to and including** seq n have been correctly received （如果您确认了单号N，我们认为N以前的所有货都收到了）
+		* Slide the window for ACK in window
+	* A timeout event （不分开数 15 天）
+		* Resend **all** packets sent but not ACKed （如果 15 天内一个确认收货都没有，所有没确认的货都重发，有钱就是这么任性）
+		* Keep a **single timer** for the **oldest sent but not ACKed packet**
+		* **Restart** the timer for ACK when there are still packets not ACKed（收到了在**等待中**的确认 i.e. 没被确认过的确认，重新开始数15天）
+		* **Stop** the timer for ACK when there are no more packets not ACKed（都确认收货啦，不数了）
+* Error
+	* Reciever **discards** out-of-order/corrupted packets, send the ACK for the last right packet （乱序了，只确认上一次正确收到的货）
+	* Sender will eventually time out and resend（咦，这个货不是确认过了么，不管，我继续数……啊超过15天了，我全都重新发，任性）
+* Advantage
+	* Receiver **don't need to buffer**
+	* Receiver only maintains the expected next sequence number
+
+![](CH3/gbn-sender.png)
+![](CH3/gbn-receiver.png)
+![](CH3/gbn.png)
+
 ### Selective Repeat (SR)
 
+* Problem of GBN
+	* One packet error, large number of retransmission （亲，一个乱序就全部重发，会破产的）
+* SR
+	* Only retransmit the errored packets
+	* **individually** acknowledge correctly received packets（分开确认收货，分开数 15 天）
+	* Out-of-order packets will be buffered until the missing one is received
+* Note
+	* Reacknowledge already received packets
+* Events
+	* Sender
+		* Data from above
+			* Check if the next available sequence number is in the window
+				* If yes, packetize and send it
+				* If no, buffer it or return it（小店无力继续发货……等等再发/等等再下单吧）
+		* Timeout
+			* Each packet has its **own timer** （分开数 15 天）
+			* Transmit the timeouted packet （15 天还没确认，单独再发一次）
+		* ACK received
+			* Check the sequence number
+				* If out of window, ignore it （咦之前确认过了吧……不管）
+				* If in the window and is the `base`
+					* Slide the window forward （可以接下一单啦）
+					* Transmit the next packet if there is one
+				* If in the window but is not the `base`(after `base`)
+					* Mark it as received, stop its timer （咦怎么后发的货先确认了……好吧总之这单交易成功）
+    * Receiver
+    	* Correct packet with seq in `[rcv_base, rcv_base + N - 1]`
+    		* Slide the window forward, sends ACK （收到这一单啦）
+    	* Correct packet with seq in `[rcv_base - N, rcv_base - 1]`
+    		* Send ACK, even it is ackowledged here
+    		* This packet means that the sender haven't receive the previous ACK, because the ACK is lost or it is delayed. Either way, just resend the ACK to be safe. （咦，重复发货了？我没收到确认收货啊亲……总之不管是不是收过了，麻烦再确认一次，多的就送你了，有钱就是任性）
+        * Otherwise
+        	* Ignore it
+        	* If the packet is in error, the sender will eventually timeout and send it again（买家：擦，货不对，不确认！卖家：怎么还没确认……好吧我再发一次，有钱就是任性）
+* GBN 和 SR 的区别
+	* GBN 只有一个 timer，SR 每个包都有一个
+	* GBN 在 timeout 时会将**所有未确认的包**再发一次，SR 只会重发被 timeout 的那一个
+	* GBN 收到序号为 n 的 ACK 时，认为**所有 n 以前**的包都收到了；SR 只认为 n 被受到了
+	* GBN 的收件方没有 buffer，SR 有；GBN 的收件方直接丢掉乱序的包，SR 会放进 buffer
+	* GBN 的收件方不需要 buffer，收件方省资源，适合网络正常 or 网络经常丢包的情况
+	* SR 不用仅仅因为乱序就重发一堆已经收到的包，发件方省资源，适合网络不稳定（会乱序）但能按时且不丢包的状况
+* delimma
+	* When the window (seq range) is too small, the wrap-around will be confusing
+	* 0 is received, but which 0? is it a **retransmission**(ACK not recived) or it is a **new one**(ACK received)?
+	* Solution
+		* Make sure there are no packet in the network with this sequence number before send it out 
+		* e.g. long enough maximun lifetime(You can't live that long in the network, right?)
+		* The reciver can be sure any duplicate(out of window) is retransmission, not a new one
+
 ## Connection-Oriented Transport: TCP
+
+
 
 ### The TCP connection
 
@@ -226,7 +405,7 @@
 
 #### Telnet: A case study for sequence and acknowledgment numbers
 
-### Roud-Trip Time Estimation and Timeout
+### Round-Trip Time Estimation and Timeout
 
 #### Estimating the Round-Trip Time
 
