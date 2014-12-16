@@ -204,6 +204,8 @@
 
 ### Building a Reliable Data Transfer Protocol
 
+![](CH3/rdt-service.png)
+
 #### Over a perfectly reliable channel: rdt 1.0
 
 * ideal model
@@ -280,6 +282,8 @@
 	* **Alternating-bit protocol**: sequence number alternates between 0 and 1
 
 ![](CH3/rdt30sender.png)
+![](CH3/rdt30-case1.png)
+![](CH3/rdt30-case2.png)
 
 ### Pipelined Reliable Data Transfer Protocols
 
@@ -350,6 +354,7 @@
 	* Only retransmit the errored packets
 	* **individually** acknowledge correctly received packets（分开确认收货，分开数 15 天）
 	* Out-of-order packets will be buffered until the missing one is received
+	![](CH3/sr-view.png)
 * Note
 	* Reacknowledge already received packets
 * Events
@@ -378,6 +383,9 @@
         * Otherwise
         	* Ignore it
         	* If the packet is in error, the sender will eventually timeout and send it again（买家：擦，货不对，不确认！卖家：怎么还没确认……好吧我再发一次，有钱就是任性）
+
+![](CH3/sr-operation.png)
+
 * GBN 和 SR 的区别
 	* GBN 只有一个 timer，SR 每个包都有一个
 	* GBN 在 timeout 时会将**所有未确认的包**再发一次，SR 只会重发被 timeout 的那一个
@@ -385,9 +393,11 @@
 	* GBN 的收件方没有 buffer，SR 有；GBN 的收件方直接丢掉乱序的包，SR 会放进 buffer
 	* GBN 的收件方不需要 buffer，收件方省资源，适合网络正常 or 网络经常丢包的情况
 	* SR 不用仅仅因为乱序就重发一堆已经收到的包，发件方省资源，适合网络不稳定（会乱序）但能按时且不丢包的状况
-* delimma
+* dilemma
 	* When the window (seq range) is too small, the wrap-around will be confusing
 	* 0 is received, but which 0? is it a **retransmission**(ACK not recived) or it is a **new one**(ACK received)?
+	![](CH3/sr-dilemma1.png)
+	![](CH3/sr-dilemma2.png)
 	* Solution
 		* Make sure there are no packet in the network with this sequence number before send it out 
 		* e.g. long enough maximun lifetime(You can't live that long in the network, right?)
@@ -395,7 +405,27 @@
 
 ## Connection-Oriented Transport: TCP
 
-
+* **Full-duplex service**
+	* A can send **data** to B when B is sending data to A
+* **point-to-point**
+	* One receiver, one sender
+* **3-way handshake**
+	* 3 segements, the last one can carry payload
+* **send-buffer**
+	* Buffer data from above
+	* Send at TCP's own convenience
+* **MSS**
+	* Maximun segment size
+	* Maximun amount of **data** in a segement
+	* ~ **MTU** - TCP/IP header length
+		* MTU = The length of the **largest link-layer frame** that the **local host** can send
+	* or use **path MTU** the length of the largest link-layer frame that can be send on **all links** (smaller)
+* **receiver buffer**
+* Resource needed
+	* Variables
+	* Buffers
+	* Sockets
+	* All on end systems, not in the network
 
 ### The TCP connection
 
